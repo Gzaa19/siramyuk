@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:siramyuk/components/circle_button.dart';
+import 'package:siramyuk/models/plant.dart';
+import 'package:siramyuk/services/plant_service.dart';
 import 'package:siramyuk/widgets/stat_card.dart';
 import 'package:siramyuk/widgets/care_card.dart';
 import 'package:siramyuk/widgets/plant_history_card.dart';
+import 'add_plant_screen.dart';
 
-class DetailPlantScreen extends StatelessWidget {
-  const DetailPlantScreen({super.key});
+class DetailPlantScreen extends StatefulWidget {
+  final String plantId;
 
-  // Colors
+  const DetailPlantScreen({super.key, required this.plantId});
+
+  @override
+  State<DetailPlantScreen> createState() => _DetailPlantScreenState();
+}
+
+class _DetailPlantScreenState extends State<DetailPlantScreen> {
+  final PlantService _plantService = PlantService();
+
   static const Color primaryColor = Color(0xFF0DF20D);
   static const Color backgroundLight = Color(0xFFF8FCF8);
   static const Color backgroundDark = Color(0xFF102210);
@@ -17,11 +28,320 @@ class DetailPlantScreen extends StatelessWidget {
   static const Color textMainDark = Color(0xFFE0EADD);
   static const Color textSecondaryLight = Color(0xFF499C49);
   static const Color textSecondaryDark = Color(0xFF0DF20D);
-  static const Color borderColorDark = Colors.white10;
-  static const Color borderColorLight = Colors.black12;
+
+  Plant? get plant => _plantService.getPlantById(widget.plantId);
+
+  void _toggleFavorite() {
+    setState(() {
+      _plantService.toggleFavorite(widget.plantId);
+    });
+    final currentPlant = plant;
+    if (currentPlant != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            currentPlant.isFavorite
+                ? '${currentPlant.nickname ?? currentPlant.name} ditambahkan ke favorit'
+                : '${currentPlant.nickname ?? currentPlant.name} dihapus dari favorit',
+          ),
+          duration: const Duration(seconds: 1),
+          backgroundColor: primaryColor,
+        ),
+      );
+    }
+  }
+
+  void _waterPlant() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.water_drop, color: Colors.blue[400]),
+            const SizedBox(width: 8),
+            const Text('Siram Tanaman'),
+          ],
+        ),
+        content: Text(
+          'Apakah Anda sudah menyiram ${plant?.nickname ?? plant?.name}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _plantService.waterPlant(widget.plantId);
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Text('${plant?.nickname ?? plant?.name} sudah disiram!'),
+                    ],
+                  ),
+                  backgroundColor: primaryColor,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Ya, Sudah'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editPlant() async {
+    if (plant == null) return;
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddPlantScreen(plant: plant)),
+    );
+    if (result == true) {
+      setState(() {});
+      // Check if plant was deleted
+      if (_plantService.getPlantById(widget.plantId) == null) {
+        Navigator.pop(context, true);
+      }
+    }
+  }
+
+  void _showMoreOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Edit Tanaman'),
+              onTap: () {
+                Navigator.pop(context);
+                _editPlant();
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                plant?.isFavorite == true
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color: plant?.isFavorite == true ? Colors.red : null,
+              ),
+              title: Text(
+                plant?.isFavorite == true
+                    ? 'Hapus dari Favorit'
+                    : 'Tambah ke Favorit',
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _toggleFavorite();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: const Text('Bagikan'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Fitur berbagi segera hadir!'),
+                    backgroundColor: primaryColor,
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: const Text(
+                'Hapus Tanaman',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showDeleteConfirmation();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Tanaman'),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus ${plant?.nickname ?? plant?.name}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              _plantService.deletePlant(widget.plantId);
+              Navigator.pop(context);
+              Navigator.pop(context, true);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Tanaman berhasil dihapus'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNotesDialog() {
+    final TextEditingController noteController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.sticky_note_2_outlined, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('Catatan'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Tambahkan catatan untuk tanaman ini:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: noteController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Tulis catatan...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Catatan berhasil disimpan! (Demo)'),
+                  backgroundColor: primaryColor,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGalleryDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.photo_library_outlined, color: Colors.purple),
+            SizedBox(width: 8),
+            Text('Galeri'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (plant != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  plant!.image,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 200,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+            const Text('Fitur galeri akan segera hadir!'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final currentPlant = plant;
+
+    if (currentPlant == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              const Text('Tanaman tidak ditemukan'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Kembali'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDarkMode ? backgroundDark : backgroundLight;
     final surfaceColor = isDarkMode ? surfaceDark : surfaceLight;
@@ -51,7 +371,7 @@ class DetailPlantScreen extends StatelessWidget {
                       // Hero Image
                       Positioned.fill(
                         child: Image.network(
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuB5Hrj1twAlDJd7tSvn3EFYStidnAyqA2uGHJhuajFEiYSaJSBAnwUv8N8rOx-P6tQvN4QgciMoU8J8H5zpoycf0f2gjTsLIyoPJkcD2Yxt2GAzGLFBPJyaGSRicMR4J3a12PSwQs05PbpVqwkYK5yQm9-5BUtrdXxwfpyINJUKHiS3tXrbi4YLztET6plBAR5DGewCdybvsmY7Rm57WNVspIjEtDeMThxHf9TZyLyIAJBqwNFxx_j4oSghsjwJBWtWcFJE7db0EP5o',
+                          currentPlant.image,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               Container(color: Colors.grey),
@@ -87,18 +407,20 @@ class DetailPlantScreen extends StatelessWidget {
                               children: [
                                 CircleButton(
                                   icon: Icons.arrow_back,
-                                  onPressed: () => Navigator.pop(context),
+                                  onPressed: () => Navigator.pop(context, true),
                                 ),
                                 Row(
                                   children: [
                                     CircleButton(
-                                      icon: Icons.favorite_border,
-                                      onPressed: () {},
+                                      icon: currentPlant.isFavorite
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      onPressed: _toggleFavorite,
                                     ),
                                     const SizedBox(width: 12),
                                     CircleButton(
                                       icon: Icons.edit_outlined,
-                                      onPressed: () {},
+                                      onPressed: _editPlant,
                                     ),
                                   ],
                                 ),
@@ -129,7 +451,7 @@ class DetailPlantScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Monty',
+                                    currentPlant.nickname ?? currentPlant.name,
                                     style: TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold,
@@ -137,17 +459,18 @@ class DetailPlantScreen extends StatelessWidget {
                                       height: 1.1,
                                     ),
                                   ),
-                                  Text(
-                                    'Monstera Deliciosa',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FontStyle.italic,
-                                      color: isDarkMode
-                                          ? Colors.grey[300]
-                                          : textMainColor.withOpacity(0.8),
+                                  if (currentPlant.nickname != null)
+                                    Text(
+                                      currentPlant.name,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        fontStyle: FontStyle.italic,
+                                        color: isDarkMode
+                                            ? Colors.grey[300]
+                                            : textMainColor.withOpacity(0.8),
+                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ),
@@ -162,7 +485,7 @@ class DetailPlantScreen extends StatelessWidget {
                                 border: Border.all(color: borderColor),
                               ),
                               child: Text(
-                                '4 months old',
+                                '${currentPlant.ageMonths ?? 0} bulan',
                                 style: TextStyle(
                                   color: textSecondaryColor,
                                   fontWeight: FontWeight.bold,
@@ -172,15 +495,54 @@ class DetailPlantScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 12),
+
+                        // Location Badge
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              size: 16,
+                              color: textSecondaryColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              currentPlant.location,
+                              style: TextStyle(
+                                color: textSecondaryColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            if (currentPlant.isFavorite)
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.favorite,
+                                    size: 16,
+                                    color: Colors.red,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Favorit',
+                                    style: TextStyle(
+                                      color: Colors.red[400],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
 
                         // Quick Stats Row
                         Row(
                           children: [
                             StatCard(
                               icon: Icons.wb_sunny_outlined,
-                              label: 'LIGHT',
-                              value: 'Indirect',
+                              label: 'CAHAYA',
+                              value: currentPlant.light ?? 'Indirect',
                               surfaceColor: surfaceColor,
                               textMainColor: textMainColor,
                               borderColor: borderColor,
@@ -188,8 +550,8 @@ class DetailPlantScreen extends StatelessWidget {
                             const SizedBox(width: 12),
                             StatCard(
                               icon: Icons.thermostat,
-                              label: 'TEMP',
-                              value: '18-24°C',
+                              label: 'SUHU',
+                              value: currentPlant.temperature ?? '18-24°C',
                               surfaceColor: surfaceColor,
                               textMainColor: textMainColor,
                               borderColor: borderColor,
@@ -197,8 +559,8 @@ class DetailPlantScreen extends StatelessWidget {
                             const SizedBox(width: 12),
                             StatCard(
                               icon: Icons.water_drop_outlined,
-                              label: 'HUMID',
-                              value: 'High',
+                              label: 'KELEMBABAN',
+                              value: currentPlant.humidity ?? 'High',
                               surfaceColor: surfaceColor,
                               textMainColor: textMainColor,
                               borderColor: borderColor,
@@ -212,7 +574,7 @@ class DetailPlantScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Care Schedule',
+                              'Jadwal Perawatan',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -220,14 +582,23 @@ class DetailPlantScreen extends StatelessWidget {
                               ),
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Fitur kalender segera hadir!',
+                                    ),
+                                    backgroundColor: primaryColor,
+                                  ),
+                                );
+                              },
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               child: Text(
-                                'View Calendar',
+                                'Lihat Kalender',
                                 style: TextStyle(
                                   color: textSecondaryColor,
                                   fontWeight: FontWeight.w600,
@@ -240,27 +611,36 @@ class DetailPlantScreen extends StatelessWidget {
                         const SizedBox(height: 16),
 
                         // Water Card (Active)
-                        CareCard(
-                          icon: Icons.water_drop,
-                          title: 'Watering',
-                          subtitle: 'Every 7 days • 250ml',
-                          rightTopText: 'Tomorrow',
-                          rightBottomText: 'Last: 6 days ago',
-                          isActive: true,
-                          surfaceColor: surfaceColor,
-                          textMainColor: textMainColor,
-                          borderColor: borderColor,
-                          isDarkMode: isDarkMode,
+                        GestureDetector(
+                          onTap: _waterPlant,
+                          child: CareCard(
+                            icon: Icons.water_drop,
+                            title: 'Penyiraman',
+                            subtitle:
+                                'Setiap ${currentPlant.wateringIntervalDays ?? 7} hari',
+                            rightTopText: currentPlant.daysUntilWatering <= 0
+                                ? 'Hari Ini!'
+                                : currentPlant.daysUntilWatering == 1
+                                ? 'Besok'
+                                : '${currentPlant.daysUntilWatering} Hari',
+                            rightBottomText:
+                                'Terakhir: ${currentPlant.daysSinceLastWatered} hari lalu',
+                            isActive: currentPlant.daysUntilWatering <= 1,
+                            surfaceColor: surfaceColor,
+                            textMainColor: textMainColor,
+                            borderColor: borderColor,
+                            isDarkMode: isDarkMode,
+                          ),
                         ),
                         const SizedBox(height: 12),
 
                         // Mist Card
                         CareCard(
                           icon: Icons.cloud_outlined,
-                          title: 'Misting',
-                          subtitle: 'Every 2 days',
-                          rightTopText: 'Today',
-                          rightBottomText: 'Done 8am',
+                          title: 'Penyemprotan',
+                          subtitle: 'Setiap 2 hari',
+                          rightTopText: 'Hari Ini',
+                          rightBottomText: 'Selesai 8 pagi',
                           surfaceColor: surfaceColor,
                           textMainColor: textMainColor,
                           borderColor: borderColor,
@@ -272,10 +652,10 @@ class DetailPlantScreen extends StatelessWidget {
                         // Fertilizer Card
                         CareCard(
                           icon: Icons.spa_outlined,
-                          title: 'Fertilizer',
-                          subtitle: 'Every 4 weeks',
-                          rightTopText: '12 Days',
-                          rightBottomText: 'Last: 16 days ago',
+                          title: 'Pupuk',
+                          subtitle: 'Setiap 4 minggu',
+                          rightTopText: '12 Hari',
+                          rightBottomText: 'Terakhir: 16 hari lalu',
                           surfaceColor: surfaceColor,
                           textMainColor: textMainColor,
                           borderColor: borderColor,
@@ -286,7 +666,7 @@ class DetailPlantScreen extends StatelessWidget {
 
                         // Plant History
                         Text(
-                          'Plant History',
+                          'Riwayat Tanaman',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -297,28 +677,34 @@ class DetailPlantScreen extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: PlantHistoryCard(
-                                icon: Icons.sticky_note_2_outlined,
-                                title: 'Notes',
-                                subtitle: '2 new notes',
-                                color: Colors.blue,
-                                surfaceColor: surfaceColor,
-                                textMainColor: textMainColor,
-                                borderColor: borderColor,
-                                isDarkMode: isDarkMode,
+                              child: GestureDetector(
+                                onTap: _showNotesDialog,
+                                child: PlantHistoryCard(
+                                  icon: Icons.sticky_note_2_outlined,
+                                  title: 'Catatan',
+                                  subtitle: '2 catatan baru',
+                                  color: Colors.blue,
+                                  surfaceColor: surfaceColor,
+                                  textMainColor: textMainColor,
+                                  borderColor: borderColor,
+                                  isDarkMode: isDarkMode,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: PlantHistoryCard(
-                                icon: Icons.photo_library_outlined,
-                                title: 'Gallery',
-                                subtitle: '14 photos',
-                                color: Colors.purple,
-                                surfaceColor: surfaceColor,
-                                textMainColor: textMainColor,
-                                borderColor: borderColor,
-                                isDarkMode: isDarkMode,
+                              child: GestureDetector(
+                                onTap: _showGalleryDialog,
+                                child: PlantHistoryCard(
+                                  icon: Icons.photo_library_outlined,
+                                  title: 'Galeri',
+                                  subtitle: '14 foto',
+                                  color: Colors.purple,
+                                  surfaceColor: surfaceColor,
+                                  textMainColor: textMainColor,
+                                  borderColor: borderColor,
+                                  isDarkMode: isDarkMode,
+                                ),
                               ),
                             ),
                           ],
@@ -330,17 +716,12 @@ class DetailPlantScreen extends StatelessWidget {
                           height: 128,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            image: const DecorationImage(
-                              image: NetworkImage(
-                                'https://placeholder.pics/svg/300',
-                              ),
-                              fit: BoxFit.cover,
-                            ),
+                            color: isDarkMode ? surfaceDark : Colors.grey[200],
                           ),
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withOpacity(0.2),
                             ),
                             child: Center(
                               child: Row(
@@ -352,9 +733,9 @@ class DetailPlantScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Living Room',
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    currentPlant.location,
+                                    style: TextStyle(
+                                      color: textMainColor,
                                       fontWeight: FontWeight.w500,
                                       fontSize: 16,
                                     ),
@@ -387,7 +768,7 @@ class DetailPlantScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: _waterPlant,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: const Color(0xFF052905),
@@ -404,7 +785,7 @@ class DetailPlantScreen extends StatelessWidget {
                           Icon(Icons.water_drop, size: 24),
                           SizedBox(width: 8),
                           Text(
-                            'Water Now',
+                            'Siram Sekarang',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -425,7 +806,7 @@ class DetailPlantScreen extends StatelessWidget {
                     ),
                     child: IconButton(
                       icon: Icon(Icons.more_vert, color: textMainColor),
-                      onPressed: () {},
+                      onPressed: _showMoreOptions,
                     ),
                   ),
                 ],

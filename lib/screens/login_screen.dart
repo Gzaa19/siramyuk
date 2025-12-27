@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'package:siramyuk/services/auth_service.dart';
+import 'beranda_screen.dart';
+import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,12 +13,53 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   static const Color primaryColor = Color(0xFF0DF20D);
   static const Color backgroundLight = Color(0xFFF5F8F5);
   static const Color backgroundDark = Color(0xFF102210);
+
+  void _login() {
+    setState(() => _isLoading = true);
+
+    final success = _authService.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const BerandaScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_authService.errorMessage ?? 'Login gagal'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _quickLogin() {
+    // For demo: Face ID / Quick login simulation
+    _emailController.text = 'demo';
+    _passwordController.text = 'demo';
+    _login();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +247,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const ForgotPasswordScreen(),
+                            ),
+                          );
+                        },
                         style: TextButton.styleFrom(
                           foregroundColor: primaryColor,
                           padding: EdgeInsets.zero,
@@ -227,14 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: SizedBox(
                             height: 56,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const HomeScreen(),
-                                  ),
-                                );
-                              },
+                              onPressed: _isLoading ? null : _login,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryColor,
                                 foregroundColor: const Color(0xFF0F172A),
@@ -247,7 +292,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              child: const Text('Masuk'),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.black,
+                                    )
+                                  : const Text('Masuk'),
                             ),
                           ),
                         ),
@@ -263,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               side: BorderSide(color: borderColor),
                             ),
                             child: InkWell(
-                              onTap: () {},
+                              onTap: _quickLogin,
                               borderRadius: BorderRadius.circular(8),
                               child: Center(
                                 child: Icon(
@@ -278,7 +327,48 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
+
+                    // Demo credentials info
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: primaryColor.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: primaryColor,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Demo Login',
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Email: demo | Password: demo\nAtau tekan tombol Face ID untuk login cepat',
+                            style: TextStyle(color: subTextColor, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -288,7 +378,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(color: subTextColor, fontSize: 14),
                         ),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const RegisterScreen(),
+                              ),
+                            );
+                          },
                           child: const Text(
                             'Daftar Sekarang',
                             style: TextStyle(
