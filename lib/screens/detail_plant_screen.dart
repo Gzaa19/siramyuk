@@ -276,9 +276,21 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
   }
 
   void _showGalleryDialog() {
+    // Store local reference to avoid null issues during dialog display
+    final currentPlant = plant;
+    if (currentPlant == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tanaman tidak ditemukan'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Row(
           children: [
             Icon(Icons.photo_library_outlined, color: Colors.purple),
@@ -289,28 +301,37 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (plant != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  plant!.image,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                currentPlant.image,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
                     height: 200,
                     color: Colors.grey[200],
-                    child: const Icon(Icons.image),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                },
+                errorBuilder: (_, __, ___) => Container(
+                  height: 200,
+                  color: Colors.grey[200],
+                  child: const Center(
+                    child: Icon(Icons.image_not_supported, size: 48),
                   ),
                 ),
               ),
+            ),
             const SizedBox(height: 16),
             const Text('Fitur galeri akan segera hadir!'),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Tutup'),
           ),
         ],

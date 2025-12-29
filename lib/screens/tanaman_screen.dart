@@ -91,178 +91,209 @@ class _TanamanScreenState extends State<TanamanScreen> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header Section
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _getGreeting(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: subTextColor,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              children: [
+                // Header Section - Flexible to allow shrinking in landscape
+                Flexible(
+                  flex: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _getGreeting(),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: subTextColor,
+                                ),
+                              ),
+                              Text(
+                                'Tanaman Saya',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: textColor,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Tanaman Saya',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withAlpha(25),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${_plantService.plants.length} Tanaman',
-                      style: const TextStyle(
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) => setState(() => _searchQuery = value),
-                decoration: InputDecoration(
-                  hintText: 'Cari tanaman...',
-                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFF94A3B8),
-                  ),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(
-                            Icons.clear,
-                            color: Color(0xFF94A3B8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
                           ),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: cardColor,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: primaryColor),
-                  ),
-                ),
-              ),
-            ),
-
-            // Filter Chips
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
-              child: Row(
-                children: _filters.map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      right: filter != _filters.last ? 12 : 0,
-                    ),
-                    child: GestureDetector(
-                      onTap: () => _onFilterSelected(filter),
-                      child: CustomFilterChip(
-                        label: filter,
-                        isSelected: isSelected,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            // Plant List
-            Expanded(
-              child: plants.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.local_florist_outlined,
-                            size: 80,
-                            color: subTextColor.withAlpha(128),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withAlpha(25),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _searchQuery.isNotEmpty
-                                ? 'Tidak ada tanaman ditemukan'
-                                : _selectedFilter != 'Semua'
-                                ? 'Tidak ada tanaman dengan filter "$_selectedFilter"'
-                                : 'Belum ada tanaman',
-                            style: TextStyle(fontSize: 16, color: subTextColor),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tekan tombol + untuk menambahkan',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: subTextColor.withAlpha(180),
+                          child: Text(
+                            '${_plantService.plants.length} Tanaman',
+                            style: const TextStyle(
+                              color: primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Search Bar - Wrapped in Flexible
+                Flexible(
+                  flex: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) =>
+                          setState(() => _searchQuery = value),
+                      decoration: InputDecoration(
+                        hintText: 'Cari tanaman...',
+                        hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Color(0xFF94A3B8),
+                        ),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.clear,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _searchQuery = '');
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: cardColor,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: primaryColor),
+                        ),
                       ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      itemCount: plants.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final plant = plants[index];
-                        return GestureDetector(
-                          onTap: () => _navigateToDetail(plant),
-                          child: PlantCard(
-                            plant: plant,
-                            cardColor: cardColor,
-                            textColor: textColor,
-                            subTextColor: subTextColor,
+                    ),
+                  ),
+                ),
+
+                // Filter Chips - Wrapped in Flexible
+                Flexible(
+                  flex: 0,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      bottom: 16,
+                    ),
+                    child: Row(
+                      children: _filters.map((filter) {
+                        final isSelected = _selectedFilter == filter;
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: filter != _filters.last ? 12 : 0,
+                          ),
+                          child: GestureDetector(
+                            onTap: () => _onFilterSelected(filter),
+                            child: CustomFilterChip(
+                              label: filter,
+                              isSelected: isSelected,
+                            ),
                           ),
                         );
-                      },
+                      }).toList(),
                     ),
-            ),
-          ],
+                  ),
+                ),
+
+                // Plant List - Takes remaining space
+                Expanded(
+                  child: plants.isEmpty
+                      ? Center(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.local_florist_outlined,
+                                  size: 80,
+                                  color: subTextColor.withAlpha(128),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _searchQuery.isNotEmpty
+                                      ? 'Tidak ada tanaman ditemukan'
+                                      : _selectedFilter != 'Semua'
+                                      ? 'Tidak ada tanaman dengan filter "$_selectedFilter"'
+                                      : 'Belum ada tanaman',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: subTextColor,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tekan tombol + untuk menambahkan',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: subTextColor.withAlpha(180),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          itemCount: plants.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final plant = plants[index];
+                            return GestureDetector(
+                              onTap: () => _navigateToDetail(plant),
+                              child: PlantCard(
+                                plant: plant,
+                                cardColor: cardColor,
+                                textColor: textColor,
+                                subTextColor: subTextColor,
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
