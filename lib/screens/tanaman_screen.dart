@@ -95,6 +95,214 @@ class _TanamanScreenState extends State<TanamanScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final isLandscape = constraints.maxWidth > constraints.maxHeight;
+
+            // For landscape mode with keyboard, use a more compact layout
+            if (isLandscape) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        // Header Section - Compact in landscape
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      '${_getGreeting()} ',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: subTextColor,
+                                      ),
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        'Tanaman Saya',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          color: textColor,
+                                          letterSpacing: -0.5,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withAlpha(25),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '${_plantService.plants.length} Tanaman',
+                                  style: const TextStyle(
+                                    color: primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Search Bar - Compact in landscape
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          child: SizedBox(
+                            height: 48,
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (value) =>
+                                  setState(() => _searchQuery = value),
+                              decoration: InputDecoration(
+                                hintText: 'Cari tanaman...',
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFF94A3B8),
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(
+                                          Icons.clear,
+                                          color: Color(0xFF94A3B8),
+                                        ),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(() => _searchQuery = '');
+                                        },
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: cardColor,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 0,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Filter Chips - Scrollable horizontal
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            bottom: 8,
+                          ),
+                          child: Row(
+                            children: _filters.map((filter) {
+                              final isSelected = _selectedFilter == filter;
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: filter != _filters.last ? 12 : 0,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () => _onFilterSelected(filter),
+                                  child: CustomFilterChip(
+                                    label: filter,
+                                    isSelected: isSelected,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+
+                        // Plant List - Takes remaining space
+                        Expanded(
+                          child: plants.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.local_florist_outlined,
+                                        size: 60,
+                                        color: subTextColor.withAlpha(128),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        _searchQuery.isNotEmpty
+                                            ? 'Tidak ada tanaman ditemukan'
+                                            : _selectedFilter != 'Semua'
+                                            ? 'Tidak ada tanaman dengan filter "$_selectedFilter"'
+                                            : 'Belum ada tanaman',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: subTextColor,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    20,
+                                    0,
+                                    20,
+                                    20,
+                                  ),
+                                  itemCount: plants.length,
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final plant = plants[index];
+                                    return GestureDetector(
+                                      onTap: () => _navigateToDetail(plant),
+                                      child: PlantCard(
+                                        plant: plant,
+                                        cardColor: cardColor,
+                                        textColor: textColor,
+                                        subTextColor: subTextColor,
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            // Portrait mode - original layout
             return Column(
               children: [
                 // Header Section - Flexible to allow shrinking in landscape

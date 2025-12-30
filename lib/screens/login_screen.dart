@@ -69,11 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final subTextColor = isDarkMode
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
-    final inputBgColor = isDarkMode
-        ? Colors.white.withOpacity(0.05)
-        : Colors.white;
+    final inputBgColor = isDarkMode ? Colors.white.withAlpha(13) : Colors.white;
     final borderColor = isDarkMode
-        ? Colors.white.withOpacity(0.1)
+        ? Colors.white.withAlpha(25)
         : const Color(0xFFE2E8F0);
 
     return Scaffold(
@@ -108,13 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withAlpha(13),
                                 blurRadius: 2,
                                 offset: const Offset(0, 1),
                               ),
                             ],
                             border: Border.all(
-                              color: primaryColor.withOpacity(0.2),
+                              color: primaryColor.withAlpha(51),
                               width: 1,
                             ),
                             image: const DecorationImage(
@@ -333,11 +331,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
+                        color: primaryColor.withAlpha(25),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: primaryColor.withOpacity(0.3),
-                        ),
+                        border: Border.all(color: primaryColor.withAlpha(77)),
                       ),
                       child: Column(
                         children: [

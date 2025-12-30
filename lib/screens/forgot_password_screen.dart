@@ -38,13 +38,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _emailSent = true;
     });
 
+    final isError =
+        _authService.errorMessage?.contains('tidak terdaftar') == true;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_authService.errorMessage ?? 'Link reset telah dikirim'),
-        backgroundColor:
-            _authService.errorMessage?.contains('tidak terdaftar') == true
-            ? Colors.red
-            : primaryColor,
+        content: Text(
+          _authService.errorMessage ?? 'Link reset telah dikirim',
+          style: TextStyle(
+            color: isError ? Colors.white : const Color(0xFF0D1C0D),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: isError ? Colors.red : primaryColor,
       ),
     );
   }
@@ -63,11 +68,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final subTextColor = isDarkMode
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
-    final inputBgColor = isDarkMode
-        ? Colors.white.withOpacity(0.05)
-        : Colors.white;
+    final inputBgColor = isDarkMode ? Colors.white.withAlpha(13) : Colors.white;
     final borderColor = isDarkMode
-        ? Colors.white.withOpacity(0.1)
+        ? Colors.white.withAlpha(25)
         : const Color(0xFFE2E8F0);
 
     return Scaffold(
@@ -95,7 +98,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
+                        color: primaryColor.withAlpha(25),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
@@ -237,9 +240,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: primaryColor.withOpacity(0.3)),
+                    border: Border.all(color: primaryColor.withAlpha(77)),
                   ),
                   child: Column(
                     children: [

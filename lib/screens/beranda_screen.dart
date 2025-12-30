@@ -249,7 +249,8 @@ class _BerandaContent extends StatelessWidget {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: _plantsNeedWater.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       final plant = _plantsNeedWater[index];
                       return _buildWaterCard(
@@ -288,7 +289,8 @@ class _BerandaContent extends StatelessWidget {
                     itemCount: _healthyPlants.length > 5
                         ? 5
                         : _healthyPlants.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       final plant = _healthyPlants[index];
                       return _buildMiniPlantCard(
@@ -358,42 +360,52 @@ class _BerandaContent extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor, primaryColor.withAlpha(180)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(Icons.eco, color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${_getGreeting()} ${_getGreetingEmoji()}',
-                  style: TextStyle(fontSize: 14, color: subTextColor),
-                ),
-                Text(
-                  'Pecinta Tanaman',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+        Expanded(
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryColor, primaryColor.withAlpha(180)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              ],
-            ),
-          ],
+                child: const Icon(Icons.eco, color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_getGreeting()} ${_getGreetingEmoji()}',
+                      style: TextStyle(fontSize: 14, color: subTextColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Pecinta Tanaman',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
+        const SizedBox(width: 8),
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 44,
@@ -411,8 +423,14 @@ class _BerandaContent extends StatelessWidget {
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Notifikasi segera hadir!'),
+                    SnackBar(
+                      content: const Text(
+                        'Notifikasi segera hadir!',
+                        style: TextStyle(
+                          color: Color(0xFF0D1C0D),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       backgroundColor: primaryColor,
                     ),
                   );
@@ -444,7 +462,9 @@ class _BerandaContent extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Logout'),
-        content: const Text('Apakah Anda yakin ingin keluar?'),
+        content: const SingleChildScrollView(
+          child: Text('Apakah Anda yakin ingin keluar?'),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -720,7 +740,7 @@ class _BerandaContent extends StatelessWidget {
                 width: double.infinity,
                 height: 70,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (context, error, stackTrace) => Container(
                   height: 70,
                   color: Colors.grey[200],
                   child: const Icon(Icons.local_florist),
@@ -747,9 +767,18 @@ class _BerandaContent extends StatelessWidget {
                   SnackBar(
                     content: Row(
                       children: [
-                        const Icon(Icons.check_circle, color: Colors.white),
+                        const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFF0D1C0D),
+                        ),
                         const SizedBox(width: 8),
-                        Text('${plant.nickname ?? plant.name} sudah disiram!'),
+                        Text(
+                          '${plant.nickname ?? plant.name} sudah disiram!',
+                          style: const TextStyle(
+                            color: Color(0xFF0D1C0D),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                     backgroundColor: primaryColor,
@@ -822,7 +851,7 @@ class _BerandaContent extends StatelessWidget {
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (context, error, stackTrace) => Container(
                   width: 60,
                   height: 60,
                   color: Colors.grey[200],
@@ -884,7 +913,7 @@ class _BerandaContent extends StatelessWidget {
                 width: 50,
                 height: 50,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (context, error, stackTrace) => Container(
                   width: 50,
                   height: 50,
                   color: Colors.grey[200],
@@ -993,7 +1022,13 @@ class _BerandaContent extends StatelessWidget {
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Fitur $label segera hadir!'),
+              content: Text(
+                'Fitur $label segera hadir!',
+                style: const TextStyle(
+                  color: Color(0xFF0D1C0D),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               backgroundColor: primaryColor,
             ),
           );

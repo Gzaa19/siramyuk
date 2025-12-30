@@ -25,10 +25,10 @@ class PlantCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        border: Border.all(color: Colors.grey.withAlpha(25)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withAlpha(5),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -72,7 +72,11 @@ class PlantCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Icon(Icons.more_vert, color: subTextColor, size: 20),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: subTextColor,
+                      size: 18,
+                    ),
                   ],
                 ),
                 Text(
@@ -97,7 +101,7 @@ class PlantCard extends StatelessWidget {
                       StatusBadge(
                         icon: Icons.check_circle,
                         label: 'Sehat',
-                        bgColor: primaryColor.withOpacity(0.2),
+                        bgColor: primaryColor.withAlpha(51),
                         textColor: const Color(0xFF15803d), // green-700
                       )
                     else if (plant.status == 'attention')

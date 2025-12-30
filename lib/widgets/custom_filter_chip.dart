@@ -20,11 +20,11 @@ class CustomFilterChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
         border: isSelected
             ? null
-            : Border.all(color: Colors.grey.withOpacity(0.2)),
+            : Border.all(color: Colors.grey.withAlpha(51)),
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.2),
+                  color: primaryColor.withAlpha(51),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

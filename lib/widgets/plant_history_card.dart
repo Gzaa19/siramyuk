@@ -38,7 +38,7 @@ class PlantHistoryCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(isDarkMode ? 0.2 : 0.1),
+              color: color.withAlpha(isDarkMode ? 51 : 25),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 20),

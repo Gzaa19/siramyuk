@@ -120,6 +120,10 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
             widget.plant != null
                 ? 'Tanaman berhasil diperbarui'
                 : 'Tanaman berhasil ditambahkan',
+            style: const TextStyle(
+              color: Color(0xFF0D1C0D),
+              fontWeight: FontWeight.w500,
+            ),
           ),
           backgroundColor: primaryColor,
         ),
@@ -135,11 +139,9 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
     final subTextColor = isDarkMode
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
-    final inputBgColor = isDarkMode
-        ? Colors.white.withOpacity(0.05)
-        : Colors.white;
+    final inputBgColor = isDarkMode ? Colors.white.withAlpha(13) : Colors.white;
     final borderColor = isDarkMode
-        ? Colors.white.withOpacity(0.1)
+        ? Colors.white.withAlpha(25)
         : const Color(0xFFE2E8F0);
 
     return Scaffold(
@@ -212,7 +214,8 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _sampleImages.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final isSelected =
                         _imageController.text == _sampleImages[index];
@@ -240,7 +243,7 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                             ? Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(11),
-                                  color: primaryColor.withOpacity(0.3),
+                                  color: primaryColor.withAlpha(77),
                                 ),
                                 child: const Icon(
                                   Icons.check,
@@ -428,8 +431,10 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text('Hapus Tanaman'),
-                          content: Text(
-                            'Apakah Anda yakin ingin menghapus ${widget.plant!.name}?',
+                          content: SingleChildScrollView(
+                            child: Text(
+                              'Apakah Anda yakin ingin menghapus ${widget.plant!.name}?',
+                            ),
                           ),
                           actions: [
                             TextButton(

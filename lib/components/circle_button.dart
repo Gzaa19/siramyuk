@@ -12,9 +12,9 @@ class CircleButton extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
+        color: Colors.black.withAlpha(51),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withAlpha(25)),
       ),
       child: IconButton(
         icon: Icon(icon, color: Colors.white, size: 20),

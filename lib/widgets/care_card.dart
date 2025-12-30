@@ -39,7 +39,7 @@ class CareCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isActive
-              ? primaryColor.withOpacity(isDarkMode ? 0.2 : 0.3)
+              ? primaryColor.withAlpha(isDarkMode ? 51 : 77)
               : borderColor,
         ),
         boxShadow: isActive ? [] : null,
@@ -55,68 +55,78 @@ class CareCard extends StatelessWidget {
               child: Container(color: primaryColor),
             ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? primaryColor.withOpacity(0.1)
-                          : (isDarkMode
-                                ? Colors.white.withOpacity(0.05)
-                                : Colors.grey[100]),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      icon,
-                      color: isActive
-                          ? primaryColor
-                          : (isDarkMode ? Colors.grey[300] : Colors.grey[600]),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: textMainColor,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                      ),
-                    ],
-                  ),
-                ],
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? primaryColor.withAlpha(25)
+                      : (isDarkMode
+                            ? Colors.white.withAlpha(13)
+                            : Colors.grey[100]),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: isActive
+                      ? primaryColor
+                      : (isDarkMode ? Colors.grey[300] : Colors.grey[600]),
+                ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    rightTopText,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: isActive || rightTopIsBold
-                          ? FontWeight.bold
-                          : FontWeight.w500,
-                      color: isActive ? primaryColor : textMainColor,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: textMainColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    rightBottomText,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      rightTopText,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: isActive || rightTopIsBold
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                        color: isActive ? primaryColor : textMainColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      rightBottomText,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

@@ -65,11 +65,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final subTextColor = isDarkMode
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
-    final inputBgColor = isDarkMode
-        ? Colors.white.withOpacity(0.05)
-        : Colors.white;
+    final inputBgColor = isDarkMode ? Colors.white.withAlpha(13) : Colors.white;
     final borderColor = isDarkMode
-        ? Colors.white.withOpacity(0.1)
+        ? Colors.white.withAlpha(25)
         : const Color(0xFFE2E8F0);
 
     return Scaffold(
@@ -97,7 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
+                        color: primaryColor.withAlpha(25),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(

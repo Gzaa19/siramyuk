@@ -43,6 +43,10 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
             currentPlant.isFavorite
                 ? '${currentPlant.nickname ?? currentPlant.name} ditambahkan ke favorit'
                 : '${currentPlant.nickname ?? currentPlant.name} dihapus dari favorit',
+            style: const TextStyle(
+              color: Color(0xFF0D1C0D),
+              fontWeight: FontWeight.w500,
+            ),
           ),
           duration: const Duration(seconds: 1),
           backgroundColor: primaryColor,
@@ -59,11 +63,13 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
           children: [
             Icon(Icons.water_drop, color: Colors.blue[400]),
             const SizedBox(width: 8),
-            const Text('Siram Tanaman'),
+            const Flexible(child: Text('Siram Tanaman')),
           ],
         ),
-        content: Text(
-          'Apakah Anda sudah menyiram ${plant?.nickname ?? plant?.name}?',
+        content: SingleChildScrollView(
+          child: Text(
+            'Apakah Anda sudah menyiram ${plant?.nickname ?? plant?.name}?',
+          ),
         ),
         actions: [
           TextButton(
@@ -80,9 +86,17 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
                 SnackBar(
                   content: Row(
                     children: [
-                      const Icon(Icons.check_circle, color: Colors.white),
+                      const Icon(Icons.check_circle, color: Color(0xFF0D1C0D)),
                       const SizedBox(width: 8),
-                      Text('${plant?.nickname ?? plant?.name} sudah disiram!'),
+                      Flexible(
+                        child: Text(
+                          '${plant?.nickname ?? plant?.name} sudah disiram!',
+                          style: const TextStyle(
+                            color: Color(0xFF0D1C0D),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   backgroundColor: primaryColor,
@@ -110,7 +124,7 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
       setState(() {});
       // Check if plant was deleted
       if (_plantService.getPlantById(widget.plantId) == null) {
-        Navigator.pop(context, true);
+        if (mounted) Navigator.pop(context, true);
       }
     }
   }
@@ -118,75 +132,95 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
   void _showMoreOptions() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: const Text('Edit Tanaman'),
-              onTap: () {
-                Navigator.pop(context);
-                _editPlant();
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                plant?.isFavorite == true
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-                color: plant?.isFavorite == true ? Colors.red : null,
-              ),
-              title: Text(
-                plant?.isFavorite == true
-                    ? 'Hapus dari Favorit'
-                    : 'Tambah ke Favorit',
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _toggleFavorite();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share_outlined),
-              title: const Text('Bagikan'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Fitur berbagi segera hadir!'),
-                    backgroundColor: primaryColor,
+      builder: (context) {
+        final screenHeight = MediaQuery.of(context).size.height;
+        final maxHeight = screenHeight * 0.6;
+
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text(
-                'Hapus Tanaman',
-                style: TextStyle(color: Colors.red),
+                  const SizedBox(height: 20),
+                  ListTile(
+                    leading: const Icon(Icons.edit_outlined),
+                    title: const Text('Edit Tanaman'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _editPlant();
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      plant?.isFavorite == true
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: plant?.isFavorite == true ? Colors.red : null,
+                    ),
+                    title: Text(
+                      plant?.isFavorite == true
+                          ? 'Hapus dari Favorit'
+                          : 'Tambah ke Favorit',
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _toggleFavorite();
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.share_outlined),
+                    title: const Text('Bagikan'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                            'Fitur berbagi segera hadir!',
+                            style: TextStyle(
+                              color: Color(0xFF0D1C0D),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          backgroundColor: primaryColor,
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.red,
+                    ),
+                    title: const Text(
+                      'Hapus Tanaman',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showDeleteConfirmation();
+                    },
+                  ),
+                ],
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _showDeleteConfirmation();
-              },
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -195,8 +229,10 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Tanaman'),
-        content: Text(
-          'Apakah Anda yakin ingin menghapus ${plant?.nickname ?? plant?.name}?',
+        content: SingleChildScrollView(
+          child: Text(
+            'Apakah Anda yakin ingin menghapus ${plant?.nickname ?? plant?.name}?',
+          ),
         ),
         actions: [
           TextButton(
@@ -226,57 +262,75 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
     final TextEditingController noteController = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.sticky_note_2_outlined, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('Catatan'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Tambahkan catatan untuk tanaman ini:'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: noteController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Tulis catatan...',
-                border: OutlineInputBorder(),
+      builder: (dialogContext) {
+        final screenHeight = MediaQuery.of(dialogContext).size.height;
+        final maxDialogHeight = screenHeight * 0.5;
+
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.sticky_note_2_outlined, color: Colors.blue),
+              SizedBox(width: 8),
+              Flexible(child: Text('Catatan')),
+            ],
+          ),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxDialogHeight),
+            child: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Tambahkan catatan untuk tanaman ini:'),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: noteController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText: 'Tulis catatan...',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Catatan berhasil disimpan! (Demo)'),
-                  backgroundColor: primaryColor,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.black,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Batal'),
             ),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Catatan berhasil disimpan! (Demo)',
+                      style: TextStyle(
+                        color: Color(0xFF0D1C0D),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    backgroundColor: primaryColor,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showGalleryDialog() {
-    // Store local reference to avoid null issues during dialog display
     final currentPlant = plant;
     if (currentPlant == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -290,52 +344,62 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
 
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.photo_library_outlined, color: Colors.purple),
-            SizedBox(width: 8),
-            Text('Galeri'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                currentPlant.image,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    height: 200,
-                    color: Colors.grey[200],
-                    child: const Center(child: CircularProgressIndicator()),
-                  );
-                },
-                errorBuilder: (_, __, ___) => Container(
-                  height: 200,
-                  color: Colors.grey[200],
-                  child: const Center(
-                    child: Icon(Icons.image_not_supported, size: 48),
+      builder: (dialogContext) {
+        final screenSize = MediaQuery.of(dialogContext).size;
+        final dialogWidth = screenSize.width * 0.8;
+        final imageHeight = screenSize.height * 0.25;
+
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.photo_library_outlined, color: Colors.purple),
+              SizedBox(width: 8),
+              Expanded(child: Text('Galeri')),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: dialogWidth,
+                  height: imageHeight,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      currentPlant.image,
+                      fit: BoxFit.cover, // Pastikan gambar mengisi area
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: Icon(Icons.image_not_supported, size: 48),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                const Text('Fitur galeri akan segera hadir!'),
+              ],
             ),
-            const SizedBox(height: 16),
-            const Text('Fitur galeri akan segera hadir!'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Tutup'),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Tutup'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -371,8 +435,8 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
         ? textSecondaryDark
         : textSecondaryLight;
     final borderColor = isDarkMode
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withAlpha(25)
+        : Colors.black.withAlpha(13);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -408,7 +472,7 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
                               colors: [
                                 backgroundColor,
                                 Colors.transparent,
-                                Colors.black.withOpacity(0.3),
+                                Colors.black.withAlpha(77),
                               ],
                               stops: const [0.0, 0.5, 1.0],
                             ),
@@ -489,7 +553,7 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
                                         fontStyle: FontStyle.italic,
                                         color: isDarkMode
                                             ? Colors.grey[300]
-                                            : textMainColor.withOpacity(0.8),
+                                            : textMainColor.withAlpha(204),
                                       ),
                                     ),
                                 ],
@@ -501,7 +565,7 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: surfaceColor.withOpacity(0.8),
+                                color: surfaceColor.withAlpha(204),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: borderColor),
                               ),
@@ -605,9 +669,13 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
                             TextButton(
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
+                                  SnackBar(
+                                    content: const Text(
                                       'Fitur kalender segera hadir!',
+                                      style: TextStyle(
+                                        color: Color(0xFF0D1C0D),
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                     backgroundColor: primaryColor,
                                   ),
@@ -742,7 +810,7 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withAlpha(51),
                             ),
                             child: Center(
                               child: Row(
@@ -782,7 +850,7 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               decoration: BoxDecoration(
-                color: surfaceColor.withOpacity(0.9),
+                color: surfaceColor.withAlpha(230),
                 border: Border(top: BorderSide(color: borderColor)),
               ),
               child: Row(
@@ -798,7 +866,7 @@ class _DetailPlantScreenState extends State<DetailPlantScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 4,
-                        shadowColor: primaryColor.withOpacity(0.4),
+                        shadowColor: primaryColor.withAlpha(102),
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
